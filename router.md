@@ -399,6 +399,178 @@ const routes = [
 </template>
 ```
 
+### 路由传递参数的方式
+
+> params的类型
+
+- 配置路由的格式 ```/router/:id```
+- 传递的方式 在path后面跟上对应的值
+- 传递后形成的路径 ```/user/zhangsan ```
+
+> query类型
+
+- 配置路由的格式 ```/router```
+- 传递的方式 对象中使用query的key作为传递方式
+- 传递后形成的路径 ```/user?id=1```
+
+query的例子
+
+```vue
+<!--App.vue-->
+<template>
+  <router-link v-bind:to="{
+      path: '/user',
+      query: {
+        id: 1,
+        name: 'zhangsan'
+      }
+    }">User</router-link>
+  <router-view></router-view>
+</template>
+```
+
+```vue
+<!--User.vue-->
+<template>
+  <div>
+    <h2>This is the user page.</h2>
+    <p>The username of this user is {{username}}.</p>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "User",
+  computed: {
+    username() {
+      return this.$route.query.name
+    }
+  }
+}
+</script>
+```
+
+```javascript
+//index.js
+{
+    path: '/user', 
+        component: () => import('../components/User')
+}
+```
+
+### 导航守卫
+
+在SPA应用中，我们希望路由改变的同时，我们去修改网页的标题
+
+我们可以通过
+
+```javascript
+window.document.title = '新标题';
+```
+
+我们一般用```router.beforeEach()``` 和 ```router.afterEach()```
+
+### beforeEach afterEach 钩子函数
+
+在路由跳转的前一刻，Vue执行 beforeEach
+
+语法：
+
+```javascript
+router.beforeEach((to, from, next) => {
+    next()//这里必须调用next，否则不能正常跳转
+})
+```
+在路由跳转之后，Vue执行 afterEach
+
+```javascript
+router.afterEach((to, from) => {
+})
+```
+
+在route中添加name， 在beforeEach中通过 ```to.matched[0].name```
+
+```javascript
+//index.js
+{
+    path: '/about',
+        name: '关于',
+    component: () => import('../components/About')
+}
+router.beforeEach((to, from, next) => {
+    document.title = to.matched[0].name,
+    next()
+})
+```
+
+### keep-alive
+
+router-view 也是一个组件，如果直接被包在 keep-alive中，所有路径匹配到的视图组件，都会被缓存
+
+他就不会被频繁的创建，也就不会频繁回调create生命周期函数
+
+```vue
+<!--Home.vue-->
+<template>
+  <div class="home">
+    <h2>This is a home page</h2>
+    <router-link to="/home/news">News</router-link>
+    <router-link to="/home/message">Message</router-link>
+    <keep-alive>
+      <router-view></router-view>
+    </keep-alive>
+  </div>
+</template>
+```
+
+### activated 和 deactivated 函数
+
+- activated() 在组件处于活跃状态时回调的函数
+- deactivated() 在组件处于不活跃状态时回调的函数
+
+下面的例子 ：点击news时候，打印activated,点击 message时， 打印 deactivated
+
+```vue
+<!--news.vue-->
+<template>
+  <div>
+    <ul>
+      <li>news1</li>
+      <li>news2</li>
+      <li>news3</li>
+      <li>news4</li>
+    </ul>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'news',
+  activated() {
+    console.log('activated');
+  },
+  deactivated() {
+    console.log('deactivated');
+  }
+}
+</script>
+```
+
+那么我们希望切换组件，当再次切换回的时候，仍然显示同一组件
+
+我们就要用到 ```beforeRouterLeave(to, from, next)``` 这也是个导航守卫
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
